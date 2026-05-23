@@ -4,62 +4,36 @@
 
 @layer base {
   :root {
-    --bg-primary: #F8FAFC;
-    --bg-surface: #FFFFFF;
-    --bg-elevated: #F1F5F9;
-    --fg-primary: #0F172A;
-    --fg-secondary: #64748B;
-    --fg-muted: #94A3B8;
-    --line: #E2E8F0;
-    --line-strong: #CBD5E1;
-    --accent: #059669;
-    --accent-light: #ECFDF5;
-    --accent-muted: rgba(5,150,105,0.12);
-    --interactive: #2563EB;
-    --interactive-light: #EFF6FF;
-    --warn: #D97706;
-    --warn-light: #FFFBEB;
+    --bg-primary: #F8FAFC; --bg-surface: #FFFFFF; --bg-elevated: #F1F5F9;
+    --fg-primary: #0F172A; --fg-secondary: #64748B; --fg-muted: #94A3B8;
+    --line: #E2E8F0; --line-strong: #CBD5E1;
+    --accent: #059669; --accent-light: #ECFDF5; --accent-muted: rgba(5,150,105,0.12);
+    --interactive: #2563EB; --interactive-light: #EFF6FF;
+    --warn: #D97706; --warn-light: #FFFBEB;
     --badge-phase-bg: #EFF6FF; --badge-phase-fg: #1E40AF;
     --badge-cat-bg: #F5F3FF; --badge-cat-fg: #6D28D9;
     --badge-low-bg: #ECFDF5; --badge-low-fg: #065F46;
     --badge-med-bg: #FFFBEB; --badge-med-fg: #92400E;
     --badge-high-bg: #FFF7ED; --badge-high-fg: #9A3412;
     --badge-crit-bg: #FEF2F2; --badge-crit-fg: #991B1B;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
   }
   .dark {
-    --bg-primary: #0F172A;
-    --bg-surface: #1E293B;
-    --bg-elevated: #334155;
-    --fg-primary: #F1F5F9;
-    --fg-secondary: #94A3B8;
-    --fg-muted: #475569;
-    --line: #334155;
-    --line-strong: #475569;
-    --accent: #10B981;
-    --accent-light: rgba(16,185,129,0.12);
-    --accent-muted: rgba(16,185,129,0.08);
-    --interactive: #3B82F6;
-    --interactive-light: rgba(59,130,246,0.12);
-    --warn: #F59E0B;
-    --warn-light: rgba(245,158,11,0.1);
+    --bg-primary: #0F172A; --bg-surface: #1E293B; --bg-elevated: #334155;
+    --fg-primary: #F1F5F9; --fg-secondary: #94A3B8; --fg-muted: #475569;
+    --line: #334155; --line-strong: #475569;
+    --accent: #10B981; --accent-light: rgba(16,185,129,0.12); --accent-muted: rgba(16,185,129,0.08);
+    --interactive: #3B82F6; --interactive-light: rgba(59,130,246,0.12);
+    --warn: #F59E0B; --warn-light: rgba(245,158,11,0.1);
     --badge-phase-bg: rgba(59,130,246,0.15); --badge-phase-fg: #60A5FA;
     --badge-cat-bg: rgba(139,92,246,0.15); --badge-cat-fg: #A78BFA;
     --badge-low-bg: rgba(16,185,129,0.15); --badge-low-fg: #34D399;
     --badge-med-bg: rgba(245,158,11,0.15); --badge-med-fg: #FBBF24;
     --badge-high-bg: rgba(249,115,22,0.15); --badge-high-fg: #FB923C;
     --badge-crit-bg: rgba(239,68,68,0.15); --badge-crit-fg: #F87171;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg-primary);
-    color: var(--fg-primary);
-    overflow-x: hidden;
-  }
+  body { background: var(--bg-primary); color: var(--fg-primary); overflow-x: hidden; }
   ::selection { background: rgba(16,185,129,0.25); }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -67,41 +41,32 @@
 }
 
 @layer components {
-  .panel {
-    @apply bg-bg-surface border border-line rounded-xl;
-  }
-  .btn-primary {
-    background: var(--accent); color: white;
-    @apply font-semibold px-4 py-2 rounded-lg transition-all duration-150 active:scale-[0.97];
-  }
+  .panel { background: var(--bg-surface); border: 1px solid var(--line); border-radius: 12px; }
+  .btn-primary { background: var(--accent); color: white; font-weight: 600; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.15s; }
   .btn-primary:hover { filter: brightness(1.1); }
-  .btn-secondary {
-    @apply bg-bg-elevated text-fg-primary font-medium px-4 py-2 rounded-lg border border-line transition-all duration-150;
-  }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary { background: var(--bg-elevated); color: var(--fg-primary); font-weight: 500; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); cursor: pointer; transition: all 0.15s; }
   .btn-secondary:hover { background: var(--line); }
-  .btn-ghost {
-    @apply text-fg-secondary font-medium px-3 py-1.5 rounded-lg transition-all duration-150;
-  }
+  .btn-ghost { color: var(--fg-secondary); font-weight: 500; padding: 6px 12px; border-radius: 8px; border: none; background: none; cursor: pointer; transition: all 0.15s; }
   .btn-ghost:hover { background: var(--bg-elevated); color: var(--fg-primary); }
-  .input-field {
-    @apply w-full bg-bg-elevated border border-line rounded-lg px-3.5 py-2.5 text-fg-primary text-sm
-    placeholder:text-fg-muted focus:outline-none focus:border-accent transition-colors;
-  }
-  .badge-phase { background: var(--badge-phase-bg); color: var(--badge-phase-fg); @apply text-[11px] font-medium px-2 py-0.5 rounded-md; }
-  .badge-category { background: var(--badge-cat-bg); color: var(--badge-cat-fg); @apply text-[11px] font-medium px-2 py-0.5 rounded-md; }
-  .badge-impact-low { background: var(--badge-low-bg); color: var(--badge-low-fg); @apply text-[11px] font-medium px-2 py-0.5 rounded-md; }
-  .badge-impact-medium { background: var(--badge-med-bg); color: var(--badge-med-fg); @apply text-[11px] font-medium px-2 py-0.5 rounded-md; }
-  .badge-impact-high { background: var(--badge-high-bg); color: var(--badge-high-fg); @apply text-[11px] font-medium px-2 py-0.5 rounded-md; }
-  .badge-impact-critical { background: var(--badge-crit-bg); color: var(--badge-crit-fg); @apply text-[11px] font-medium px-2 py-0.5 rounded-md; }
-  .stat-card {
-    @apply panel p-4 flex flex-col gap-1;
-  }
-  .glass-panel { @apply panel; }
-  .glass-panel-sm { @apply panel; }
+  .input-field { width: 100%; background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; color: var(--fg-primary); font-size: 14px; font-family: inherit; transition: border-color 0.15s; outline: none; }
+  .input-field::placeholder { color: var(--fg-muted); }
+  .input-field:focus { border-color: var(--accent); }
+  .input-textarea { width: 100%; background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; color: var(--fg-primary); font-size: 14px; font-family: inherit; resize: none; outline: none; transition: border-color 0.15s; }
+  .input-textarea:focus { border-color: var(--accent); }
+  .badge-phase { background: var(--badge-phase-bg); color: var(--badge-phase-fg); font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; }
+  .badge-category { background: var(--badge-cat-bg); color: var(--badge-cat-fg); font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; }
+  .badge-impact-low { background: var(--badge-low-bg); color: var(--badge-low-fg); font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; }
+  .badge-impact-medium { background: var(--badge-med-bg); color: var(--badge-med-fg); font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; }
+  .badge-impact-high { background: var(--badge-high-bg); color: var(--badge-high-fg); font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; }
+  .badge-impact-critical { background: var(--badge-crit-bg); color: var(--badge-crit-fg); font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; }
+  .stat-card { background: var(--bg-surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+  .glass-panel { background: var(--bg-surface); border: 1px solid var(--line); border-radius: 12px; }
+  .glass-panel-sm { background: var(--bg-surface); border: 1px solid var(--line); border-radius: 10px; }
 }
 
 .completion-ring { transition: stroke-dashoffset 0.6s cubic-bezier(0.16,1,0.3,1); }
-.typing-dot { @apply w-1.5 h-1.5 rounded-full; background: var(--accent); animation: tbounce 1.4s infinite ease-in-out; }
+.typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: tbounce 1.4s infinite ease-in-out; }
 .typing-dot:nth-child(2) { animation-delay: 0.16s; }
 .typing-dot:nth-child(3) { animation-delay: 0.32s; }
 @keyframes tbounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
