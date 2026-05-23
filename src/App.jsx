@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -12,21 +12,14 @@ import { useStore } from './hooks/useStore';
 function Toast({ toast }) {
   if (!toast) return null;
   return (
-    <motion.div
-      key={toast.id}
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.95 }}
-      className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm font-medium backdrop-blur-xl border ${
-        toast.type === 'success'
-          ? 'bg-brand-500/20 text-brand-300 border-brand-500/30'
-          : toast.type === 'error'
-          ? 'bg-red-500/20 text-red-300 border-red-500/30'
-          : 'bg-surface-3 text-text-primary border-white/[0.08]'
+    <motion.div key={toast.id}
+      initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+      className={`fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-lg shadow-md text-sm font-medium border ${
+        toast.type === 'success' ? 'bg-accent-light text-accent border-accent/20'
+        : toast.type === 'error' ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20'
+        : 'bg-bg-surface text-fg-primary border-line'
       }`}
-    >
-      {toast.message}
-    </motion.div>
+    >{toast.message}</motion.div>
   );
 }
 
@@ -36,6 +29,12 @@ export default function App() {
   const [selectedDecisionId, setSelectedDecisionId] = useState(null);
   const [showExport, setShowExport] = useState(false);
   const [aiMode, setAiMode] = useState('simulated');
+  const [theme, setTheme] = useState(() => localStorage.getItem('dt-theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('dt-theme', theme);
+  }, [theme]);
 
   const handleSetView = (v) => {
     if (v.startsWith('detail:')) {
@@ -54,111 +53,41 @@ export default function App() {
 
   const selectedDecision = store.decisions.find(d => d.id === selectedDecisionId);
 
+  const viewTitles = {
+    dashboard: { title: 'Dashboard', sub: 'Decision documentation overview' },
+    log: { title: 'Decision log', sub: `${store.filteredDecisions.length} decisions${store.activeProjectId !== 'all' ? ' in current project' : ''}` },
+  };
+  const header = viewTitles[view];
+
   return (
-    <div className="min-h-screen bg-surface-0">
+    <div className="min-h-screen bg-bg-primary font-sans">
       <Sidebar
-        view={view}
-        setView={handleSetView}
-        projects={store.projects}
-        activeProjectId={store.activeProjectId}
-        setActiveProjectId={store.setActiveProjectId}
-        onAddProject={store.addProject}
-        aiMode={aiMode}
-        setAiMode={setAiMode}
+        view={view} setView={handleSetView}
+        projects={store.projects} activeProjectId={store.activeProjectId}
+        setActiveProjectId={store.setActiveProjectId} onAddProject={store.addProject}
+        aiMode={aiMode} setAiMode={setAiMode}
+        theme={theme} setTheme={setTheme}
       />
 
-      <main className="ml-64 p-6 lg:p-8 max-w-5xl">
-        {/* Page header */}
-        {view !== 'capture' && view !== 'quick' && view !== 'detail' && (
-          <motion.div
-            key={view}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
-          >
-            <h2 className="text-2xl font-bold text-text-primary">
-              {view === 'dashboard' ? 'Dashboard' : 'Decision Log'}
-            </h2>
-            <p className="text-sm text-text-tertiary mt-1">
-              {view === 'dashboard'
-                ? 'Overview of decision documentation across your projects'
-                : `${store.filteredDecisions.length} decisions ${store.activeProjectId !== 'all' ? 'in current project' : 'across all projects'}`
-              }
-            </p>
+      <main className="ml-60 p-6 lg:p-8 max-w-5xl">
+        {header && (
+          <motion.div key={view} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6">
+            <h2 className="text-xl font-semibold text-fg-primary">{header.title}</h2>
+            <p className="text-sm text-fg-secondary mt-0.5">{header.sub}</p>
           </motion.div>
         )}
 
         <AnimatePresence mode="wait">
-          {view === 'dashboard' && (
-            <motion.div key="dash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <Dashboard
-                decisions={store.filteredDecisions}
-                setView={handleSetView}
-              />
-            </motion.div>
-          )}
-
-          {view === 'capture' && (
-            <motion.div key="capture" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <CaptureWizard
-                projects={store.projects}
-                activeProjectId={store.activeProjectId}
-                onSave={handleSaveDecision}
-                onCancel={() => setView('dashboard')}
-                aiMode={aiMode}
-              />
-            </motion.div>
-          )}
-
-          {view === 'quick' && (
-            <motion.div key="quick" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <QuickCapture
-                projects={store.projects}
-                activeProjectId={store.activeProjectId}
-                onSave={handleSaveDecision}
-                onCancel={() => setView('dashboard')}
-                aiMode={aiMode}
-              />
-            </motion.div>
-          )}
-
-          {view === 'log' && (
-            <motion.div key="log" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <DecisionLog
-                decisions={store.filteredDecisions}
-                onSelect={(id) => { setSelectedDecisionId(id); setView('detail'); }}
-                onExport={() => setShowExport(true)}
-              />
-            </motion.div>
-          )}
-
-          {view === 'detail' && selectedDecision && (
-            <motion.div key="detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <DecisionDetail
-                decision={selectedDecision}
-                onBack={() => setView('log')}
-                onUpdate={store.updateDecision}
-                onDelete={store.deleteDecision}
-              />
-            </motion.div>
-          )}
+          {view === 'dashboard' && <Dashboard key="d" decisions={store.filteredDecisions} setView={handleSetView} />}
+          {view === 'capture' && <CaptureWizard key="c" projects={store.projects} activeProjectId={store.activeProjectId} onSave={handleSaveDecision} onCancel={() => setView('dashboard')} aiMode={aiMode} />}
+          {view === 'quick' && <QuickCapture key="q" projects={store.projects} activeProjectId={store.activeProjectId} onSave={handleSaveDecision} onCancel={() => setView('dashboard')} aiMode={aiMode} />}
+          {view === 'log' && <DecisionLog key="l" decisions={store.filteredDecisions} onSelect={(id) => { setSelectedDecisionId(id); setView('detail'); }} onExport={() => setShowExport(true)} />}
+          {view === 'detail' && selectedDecision && <DecisionDetail key="det" decision={selectedDecision} onBack={() => setView('log')} onUpdate={store.updateDecision} onDelete={store.deleteDecision} />}
         </AnimatePresence>
       </main>
 
-      {/* Export modal */}
-      <AnimatePresence>
-        {showExport && (
-          <ExportModal
-            decisions={store.filteredDecisions}
-            onClose={() => setShowExport(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Toast */}
-      <AnimatePresence>
-        <Toast toast={store.toast} />
-      </AnimatePresence>
+      <AnimatePresence>{showExport && <ExportModal decisions={store.filteredDecisions} onClose={() => setShowExport(false)} />}</AnimatePresence>
+      <AnimatePresence><Toast toast={store.toast} /></AnimatePresence>
     </div>
   );
 }
