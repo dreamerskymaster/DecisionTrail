@@ -76,7 +76,10 @@ export function useStore() {
 
     if (isSupabaseConfigured()) {
       const dbRow = {
-        ...newDec,
+        id: newDec.id, what: newDec.what, why: newDec.why,
+        alternatives: newDec.alternatives, who: newDec.who, risks: newDec.risks,
+        phase: newDec.phase, category: newDec.category, impact: newDec.impact,
+        summary: newDec.summary, completeness: newDec.completeness,
         project_id: newDec.projectId, project_name: newDec.projectName,
         created_at: newDec.createdAt,
       };
