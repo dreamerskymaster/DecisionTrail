@@ -157,7 +157,7 @@ export default function Sidebar({
         </div>
         <div className="flex items-center gap-1.5 text-[11px]">
           {aiMode === 'claude' ? (
-            <><Brain size={12} className="text-brand-400" /><span className="text-brand-400 font-medium">Claude AI Active</span></>
+            <><Brain size={12} className="text-brand-400" /><span className="text-brand-400 font-medium">Gemini AI Active</span></>
           ) : (
             <><Zap size={12} className="text-text-tertiary" /><span className="text-text-tertiary">Simulated Mode</span></>
           )}

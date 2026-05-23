@@ -59,13 +59,6 @@ export function generateSummary(answers) {
   return `${firstSentence} This decision was driven by: ${why.length > 80 ? why.slice(0, 77) + '...' : why}`;
 }
 
-// ---- Claude API Integration ----
-const ANTHROPIC_KEY = typeof import.meta !== 'undefined'
-  ? import.meta.env?.VITE_ANTHROPIC_API_KEY || ''
-  : '';
-
-export const isClaudeConfigured = () => !!ANTHROPIC_KEY;
-
 const SYSTEM_PROMPT = `You are an AI assistant inside DecisionTrail, a decision documentation tool for field project coordinators at an industrial equipment installation company. Your job is to help structure decision records.
 
 Given a user's conversational description of a project decision, extract and return ONLY a JSON object (no markdown, no backticks) with these fields:
@@ -81,32 +74,42 @@ Given a user's conversational description of a project decision, extract and ret
 
 Use plain workplace language. No PM jargon.`;
 
-export async function classifyWithClaude(userInput) {
-  if (!ANTHROPIC_KEY) throw new Error('Anthropic API key not configured');
+// ---- Gemini API Integration ----
+const GEMINI_KEY = typeof import.meta !== 'undefined'
+  ? import.meta.env?.VITE_GEMINI_API_KEY || ''
+  : '';
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userInput }],
-    }),
-  });
+export const isAIConfigured = () => !!GEMINI_KEY;
+// Keep old name for backward compat
+export const isClaudeConfigured = isAIConfigured;
+
+export async function classifyWithClaude(userInput) {
+  if (!GEMINI_KEY) throw new Error('Gemini API key not configured');
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ parts: [{ text: userInput }] }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 1000,
+          responseMimeType: 'application/json',
+        },
+      }),
+    }
+  );
 
   if (!response.ok) {
     const err = await response.text();
-    throw new Error(`Claude API error: ${response.status} ${err}`);
+    throw new Error(`Gemini API error: ${response.status} ${err}`);
   }
 
   const data = await response.json();
-  const text = data.content.map(b => b.text || '').join('');
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
   const cleaned = text.replace(/```json|```/g, '').trim();
   return JSON.parse(cleaned);
 }
