@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Clock, CheckCircle2, AlertTriangle, ArrowRight, BarChart3, FileText } from 'lucide-react';
 import { PHASES, CATEGORIES } from '../lib/ai';
+import Onboarding from './Onboarding';
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } };
@@ -115,6 +116,9 @@ function CategoryBreakdown({ decisions }) {
 }
 
 export default function Dashboard({ decisions, setView }) {
+  if (!decisions || decisions.length === 0) {
+    return <Onboarding setView={setView} />;
+  }
   const stats = useMemo(() => {
     const total = decisions.length;
     const complete = decisions.filter(d => (d.completeness || 0) >= 100).length;
