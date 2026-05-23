@@ -29,15 +29,24 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="w-60 h-screen fixed left-0 top-0 bg-bg-surface border-r border-line flex flex-col z-30">
+    <>
+      {/* Mobile header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 border-b border-line" style={{ background: 'var(--bg-surface)' }}>
+        <div className="flex items-center gap-2">
+          <img src="/decisiontraillogo.png" alt="DecisionTrail" className="w-7 h-7 rounded-md object-cover" />
+          <span className="text-sm font-semibold" style={{ color: 'var(--fg-primary)' }}>DecisionTrail</span>
+        </div>
+        <button onClick={() => { const el = document.getElementById('dt-sidebar'); el.classList.toggle('translate-x-0'); el.classList.toggle('-translate-x-full'); }}
+          className="p-1.5 rounded-lg" style={{ color: 'var(--fg-secondary)' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+      </div>
+
+      <aside id="dt-sidebar" className="w-60 h-screen fixed left-0 top-0 border-r border-line flex flex-col z-30 transition-transform duration-200 -translate-x-full lg:translate-x-0" style={{ background: 'var(--bg-surface)' }}>
       {/* Logo */}
       <div className="px-4 py-4 border-b border-line">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-            <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 10h3l2.5-5 3 10 2.5-5H18" />
-            </svg>
-          </div>
+          <img src="/decisiontraillogo.png" alt="DecisionTrail" className="w-8 h-8 rounded-lg object-cover" />
           <div>
             <p className="text-sm font-semibold text-fg-primary leading-tight">DecisionTrail</p>
             <p className="text-[10px] text-fg-muted leading-tight">Decision documentation</p>
@@ -140,5 +149,6 @@ export default function Sidebar({
         </div>
       </div>
     </aside>
+    </>
   );
 }

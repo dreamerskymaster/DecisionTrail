@@ -69,7 +69,7 @@ export default function App() {
         theme={theme} setTheme={setTheme}
       />
 
-      <main className="ml-60 p-6 lg:p-8 max-w-5xl">
+      <main className="lg:ml-60 pt-14 lg:pt-0 p-4 lg:p-8 max-w-5xl">
         {header && (
           <motion.div key={view} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6">
             <h2 className="text-xl font-semibold text-fg-primary">{header.title}</h2>
