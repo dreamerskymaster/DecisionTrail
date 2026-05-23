@@ -20,17 +20,20 @@ export function useStore() {
         try {
           const { data: decs } = await supabase.from('decisions').select('*').order('created_at', { ascending: false });
           const { data: projs } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
-          // Map snake_case DB columns to camelCase app fields
-          setDecisions((decs || []).map(d => ({
-            ...d,
-            createdAt: d.created_at || d.createdAt,
-            projectId: d.project_id || d.projectId,
-            projectName: d.project_name || d.projectName,
-          })));
-          setProjects((projs || []).map(p => ({
-            ...p,
-            createdAt: p.created_at || p.createdAt,
-          })));
+          if (decs && decs.length > 0) {
+            setDecisions(decs.map(d => ({
+              ...d,
+              createdAt: d.created_at || d.createdAt,
+              projectId: d.project_id || d.projectId,
+              projectName: d.project_name || d.projectName,
+            })));
+            setProjects((projs || []).map(p => ({
+              ...p,
+              createdAt: p.created_at || p.createdAt,
+            })));
+          } else {
+            loadLocal();
+          }
         } catch (e) {
           console.error('Supabase fetch error:', e);
           loadLocal();
