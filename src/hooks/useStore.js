@@ -20,8 +20,17 @@ export function useStore() {
         try {
           const { data: decs } = await supabase.from('decisions').select('*').order('created_at', { ascending: false });
           const { data: projs } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
-          setDecisions(decs || []);
-          setProjects(projs || []);
+          // Map snake_case DB columns to camelCase app fields
+          setDecisions((decs || []).map(d => ({
+            ...d,
+            createdAt: d.created_at || d.createdAt,
+            projectId: d.project_id || d.projectId,
+            projectName: d.project_name || d.projectName,
+          })));
+          setProjects((projs || []).map(p => ({
+            ...p,
+            createdAt: p.created_at || p.createdAt,
+          })));
         } catch (e) {
           console.error('Supabase fetch error:', e);
           loadLocal();
@@ -66,7 +75,12 @@ export function useStore() {
     showToast('Decision logged successfully');
 
     if (isSupabaseConfigured()) {
-      supabase.from('decisions').insert(newDec).then(({ error }) => {
+      const dbRow = {
+        ...newDec,
+        project_id: newDec.projectId, project_name: newDec.projectName,
+        created_at: newDec.createdAt,
+      };
+      supabase.from('decisions').insert(dbRow).then(({ error }) => {
         if (error) console.error('Supabase insert error:', error);
       });
     }

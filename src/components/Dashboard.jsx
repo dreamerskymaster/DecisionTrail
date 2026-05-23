@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Clock, CheckCircle2, AlertTriangle, ArrowRight, BarChart3 } from 'lucide-react';
+import { TrendingUp, Clock, CheckCircle2, AlertTriangle, ArrowRight, BarChart3, FileText } from 'lucide-react';
 import { PHASES, CATEGORIES } from '../lib/ai';
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };

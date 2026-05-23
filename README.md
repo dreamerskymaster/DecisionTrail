@@ -84,9 +84,18 @@ Every decision is automatically tagged with:
 - **Category**: Engineering, Scheduling, Budget, Safety, Scope, Vendor, Resource
 - **Impact**: Low, Medium, High, Critical
 
-### Sample Data
+### Sample Data and Real Data Sources
 
-Includes 10 realistic decisions spanning all 5 project phases, grounded in real industrial equipment installation scenarios (sorting screen mesh changes, conveyor reroutes, motor supplier switches, electrical safety delays, schedule recovery). Ready for M7 live demo.
+DecisionTrail ships with **24+ real and domain-specific decisions** seeded from multiple sources:
+
+| Source | Records | What It Provides |
+|---|---|---|
+| **Industrial Equipment Decisions** (handcrafted, Van Dyk-grounded) | 12 | Full decision records with rationale from real MRF installation scenarios: equipment substitutions, conveyor reroutes, vendor switches, safety compliance, scope changes, resource allocation |
+| **NASA TechPort API** (`techport.nasa.gov/api`) | 12+ | Real NASA R&D project decisions with descriptions, benefits analysis, organizational data, and technology readiness assessments |
+
+The seed script (`scripts/seed.mjs`) fetches live data from NASA's public REST API and combines it with domain-specific industrial equipment decisions. Run `node scripts/seed.mjs` to populate your Supabase instance.
+
+**Data architecture:** Supabase (PostgreSQL) with full-text search indexes, row-level security, and a localStorage fallback for offline/demo use.
 
 ---
 
