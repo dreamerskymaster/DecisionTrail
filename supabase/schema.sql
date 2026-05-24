@@ -1,5 +1,10 @@
 -- DecisionTrail Database Schema for Supabase
--- Run this in the Supabase SQL Editor to set up your tables
+-- Run this in the Supabase SQL Editor to set up your tables.
+-- Safe to re-run: uses IF NOT EXISTS and IF EXISTS guards.
+
+-- ===========================================================
+-- TABLES
+-- ===========================================================
 
 -- Projects table
 CREATE TABLE IF NOT EXISTS projects (
@@ -13,7 +18,7 @@ CREATE TABLE IF NOT EXISTS projects (
 -- Decisions table
 CREATE TABLE IF NOT EXISTS decisions (
   id TEXT PRIMARY KEY,
-  project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
+  project_id TEXT REFERENCES projects(id) ON DELETE SET NULL,
   project_name TEXT,
   what TEXT,
   why TEXT,
@@ -28,7 +33,9 @@ CREATE TABLE IF NOT EXISTS decisions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Indexes for fast retrieval
+-- ===========================================================
+-- INDEXES
+-- ===========================================================
 CREATE INDEX IF NOT EXISTS idx_decisions_project ON decisions(project_id);
 CREATE INDEX IF NOT EXISTS idx_decisions_phase ON decisions(phase);
 CREATE INDEX IF NOT EXISTS idx_decisions_category ON decisions(category);
@@ -44,10 +51,34 @@ ALTER TABLE decisions ADD COLUMN IF NOT EXISTS search_vector tsvector
 
 CREATE INDEX IF NOT EXISTS idx_decisions_search ON decisions USING gin(search_vector);
 
--- Row Level Security (optional, for multi-user support later)
+-- ===========================================================
+-- ROW LEVEL SECURITY
+-- ===========================================================
+-- Demo-friendly: allow anon and authenticated roles to read/write.
+-- For production multi-user, replace with auth.uid()-based policies.
+
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE decisions ENABLE ROW LEVEL SECURITY;
 
--- Allow all operations for authenticated users (adjust for production)
-CREATE POLICY "Allow all for authenticated" ON projects FOR ALL USING (true);
-CREATE POLICY "Allow all for authenticated" ON decisions FOR ALL USING (true);
+-- Clean up any prior policies before recreating
+DROP POLICY IF EXISTS "Allow all for authenticated" ON projects;
+DROP POLICY IF EXISTS "Allow all for authenticated" ON decisions;
+DROP POLICY IF EXISTS "projects_anon_all" ON projects;
+DROP POLICY IF EXISTS "decisions_anon_all" ON decisions;
+
+-- Explicit policies for anon and authenticated roles
+CREATE POLICY "projects_anon_all" ON projects
+  FOR ALL
+  TO anon, authenticated
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "decisions_anon_all" ON decisions
+  FOR ALL
+  TO anon, authenticated
+  USING (true)
+  WITH CHECK (true);
+
+-- Grant table-level access to anon (required alongside RLS in some setups)
+GRANT SELECT, INSERT, UPDATE, DELETE ON projects TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON decisions TO anon, authenticated;

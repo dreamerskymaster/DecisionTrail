@@ -116,25 +116,29 @@ function CategoryBreakdown({ decisions }) {
 }
 
 export default function Dashboard({ decisions, setView }) {
-  if (!decisions || decisions.length === 0) {
-    return <Onboarding setView={setView} />;
-  }
+  const safeDecisions = decisions || [];
+  const isEmpty = safeDecisions.length === 0;
+
   const stats = useMemo(() => {
-    const total = decisions.length;
-    const complete = decisions.filter(d => (d.completeness || 0) >= 100).length;
+    const total = safeDecisions.length;
+    const complete = safeDecisions.filter(d => (d.completeness || 0) >= 100).length;
     const avgCompleteness = total > 0
-      ? Math.round(decisions.reduce((s, d) => s + (d.completeness || 0), 0) / total)
+      ? Math.round(safeDecisions.reduce((s, d) => s + (d.completeness || 0), 0) / total)
       : 0;
-    const phasesWithDecs = new Set(decisions.map(d => d.phase)).size;
+    const phasesWithDecs = new Set(safeDecisions.map(d => d.phase)).size;
     const coveragePercent = Math.round((phasesWithDecs / PHASES.length) * 100);
-    const thisWeek = decisions.filter(d => {
+    const thisWeek = safeDecisions.filter(d => {
       const diff = Date.now() - new Date(d.createdAt).getTime();
       return diff < 7 * 24 * 60 * 60 * 1000;
     }).length;
     return { total, complete, avgCompleteness, coveragePercent, thisWeek };
-  }, [decisions]);
+  }, [safeDecisions]);
 
-  const recent = decisions.slice(0, 5);
+  const recent = useMemo(() => safeDecisions.slice(0, 5), [safeDecisions]);
+
+  if (isEmpty) {
+    return <Onboarding setView={setView} />;
+  }
 
   return (
     <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-5">
@@ -180,8 +184,8 @@ export default function Dashboard({ decisions, setView }) {
 
       {/* Coverage + Category Grid */}
       <motion.div variants={fadeUp} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <CoverageMap decisions={decisions} />
-        <CategoryBreakdown decisions={decisions} />
+        <CoverageMap decisions={safeDecisions} />
+        <CategoryBreakdown decisions={safeDecisions} />
       </motion.div>
 
       {/* Recent Decisions */}

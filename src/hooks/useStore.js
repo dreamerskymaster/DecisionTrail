@@ -6,6 +6,67 @@ import { SAMPLE_DECISIONS, DEFAULT_PROJECTS } from '../lib/data';
 const uid = () => 'dec-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const pid = () => 'proj-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
+// Convert camelCase decision to snake_case row for Supabase
+function toDbRow(d) {
+  return {
+    id: d.id,
+    what: d.what ?? null,
+    why: d.why ?? null,
+    alternatives: d.alternatives ?? null,
+    who: d.who ?? null,
+    risks: d.risks ?? null,
+    phase: d.phase ?? null,
+    category: d.category ?? null,
+    impact: d.impact ?? null,
+    summary: d.summary ?? null,
+    completeness: d.completeness ?? 0,
+    project_id: d.projectId ?? d.project_id ?? null,
+    project_name: d.projectName ?? d.project_name ?? null,
+    created_at: d.createdAt ?? d.created_at ?? new Date().toISOString(),
+  };
+}
+
+function fromDbRow(d) {
+  return {
+    ...d,
+    createdAt: d.created_at || d.createdAt,
+    projectId: d.project_id || d.projectId,
+    projectName: d.project_name || d.projectName,
+  };
+}
+
+function toDbProject(p) {
+  return {
+    id: p.id,
+    name: p.name,
+    client: p.client ?? null,
+    status: p.status ?? 'active',
+    created_at: p.createdAt ?? p.created_at ?? new Date().toISOString(),
+  };
+}
+
+function fromDbProject(p) {
+  return {
+    ...p,
+    createdAt: p.created_at || p.createdAt,
+  };
+}
+
+// Map camelCase updates to snake_case for Supabase
+function mapUpdatesToDb(updates) {
+  const mapping = {
+    projectId: 'project_id',
+    projectName: 'project_name',
+    createdAt: 'created_at',
+  };
+  const result = {};
+  for (const [k, v] of Object.entries(updates)) {
+    const dbKey = mapping[k] || k;
+    result[dbKey] = v;
+  }
+  return result;
+}
+
 export function useStore() {
   const [decisions, setDecisions] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -15,33 +76,52 @@ export function useStore() {
 
   // Initialize data
   useEffect(() => {
+    let cancelled = false;
+
     const init = async () => {
       if (isSupabaseConfigured()) {
         try {
-          const { data: decs } = await supabase.from('decisions').select('*').order('created_at', { ascending: false });
-          const { data: projs } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
-          if (decs && decs.length > 0) {
-            setDecisions(decs.map(d => ({
-              ...d,
-              createdAt: d.created_at || d.createdAt,
-              projectId: d.project_id || d.projectId,
-              projectName: d.project_name || d.projectName,
-            })));
-            setProjects((projs || []).map(p => ({
-              ...p,
-              createdAt: p.created_at || p.createdAt,
-            })));
-          } else {
-            loadLocal();
+          const { data: projs, error: projErr } = await supabase
+            .from('projects').select('*').order('created_at', { ascending: false });
+          const { data: decs, error: decErr } = await supabase
+            .from('decisions').select('*').order('created_at', { ascending: false });
+
+          if (projErr) console.error('Supabase projects fetch error:', projErr);
+          if (decErr) console.error('Supabase decisions fetch error:', decErr);
+
+          if (cancelled) return;
+
+          // First-time seed: if Supabase is reachable but empty, push default data
+          if ((!projs || projs.length === 0) && !projErr) {
+            const seededProjects = DEFAULT_PROJECTS.map(toDbProject);
+            const { error: seedProjErr } = await supabase.from('projects').insert(seededProjects);
+            if (seedProjErr) console.error('Project seed error:', seedProjErr);
           }
+
+          if ((!decs || decs.length === 0) && !decErr) {
+            const seededDecisions = SAMPLE_DECISIONS.map(toDbRow);
+            const { error: seedDecErr } = await supabase.from('decisions').insert(seededDecisions);
+            if (seedDecErr) console.error('Decision seed error:', seedDecErr);
+          }
+
+          // Re-fetch after potential seed
+          const { data: finalProjs } = await supabase
+            .from('projects').select('*').order('created_at', { ascending: false });
+          const { data: finalDecs } = await supabase
+            .from('decisions').select('*').order('created_at', { ascending: false });
+
+          if (cancelled) return;
+
+          setProjects((finalProjs && finalProjs.length ? finalProjs : DEFAULT_PROJECTS).map(fromDbProject));
+          setDecisions((finalDecs && finalDecs.length ? finalDecs : SAMPLE_DECISIONS).map(fromDbRow));
         } catch (e) {
-          console.error('Supabase fetch error:', e);
-          loadLocal();
+          console.error('Supabase init error, using local fallback:', e);
+          if (!cancelled) loadLocal();
         }
       } else {
         loadLocal();
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     };
 
     const loadLocal = () => {
@@ -52,9 +132,10 @@ export function useStore() {
     };
 
     init();
+    return () => { cancelled = true; };
   }, []);
 
-  // Persist to localStorage on change
+  // Persist to localStorage on change as a safety net
   useEffect(() => {
     if (!loading) {
       localStore.saveDecisions(decisions);
@@ -78,16 +159,11 @@ export function useStore() {
     showToast('Decision logged successfully');
 
     if (isSupabaseConfigured()) {
-      const dbRow = {
-        id: newDec.id, what: newDec.what, why: newDec.why,
-        alternatives: newDec.alternatives, who: newDec.who, risks: newDec.risks,
-        phase: newDec.phase, category: newDec.category, impact: newDec.impact,
-        summary: newDec.summary, completeness: newDec.completeness,
-        project_id: newDec.projectId, project_name: newDec.projectName,
-        created_at: newDec.createdAt,
-      };
-      supabase.from('decisions').insert(dbRow).then(({ error }) => {
-        if (error) console.error('Supabase insert error:', error);
+      supabase.from('decisions').insert(toDbRow(newDec)).then(({ error }) => {
+        if (error) {
+          console.error('Supabase insert error:', error);
+          showToast('Saved locally. Cloud sync failed.', 'error');
+        }
       });
     }
     return newDec;
@@ -100,7 +176,8 @@ export function useStore() {
     showToast('Decision updated');
 
     if (isSupabaseConfigured()) {
-      supabase.from('decisions').update(updates).eq('id', id).then(({ error }) => {
+      const dbUpdates = mapUpdatesToDb(updates);
+      supabase.from('decisions').update(dbUpdates).eq('id', id).then(({ error }) => {
         if (error) console.error('Supabase update error:', error);
       });
     }
@@ -111,14 +188,30 @@ export function useStore() {
     showToast('Decision deleted', 'info');
 
     if (isSupabaseConfigured()) {
-      supabase.from('decisions').delete().eq('id', id);
+      supabase.from('decisions').delete().eq('id', id).then(({ error }) => {
+        if (error) console.error('Supabase delete error:', error);
+      });
     }
   }, [showToast]);
 
   const addProject = useCallback((project) => {
-    const newProj = { ...project, id: pid(), createdAt: new Date().toISOString().split('T')[0], status: 'active' };
+    const newProj = {
+      ...project,
+      id: pid(),
+      createdAt: new Date().toISOString(),
+      status: 'active',
+    };
     setProjects(prev => [newProj, ...prev]);
     showToast('Project created');
+
+    if (isSupabaseConfigured()) {
+      supabase.from('projects').insert(toDbProject(newProj)).then(({ error }) => {
+        if (error) {
+          console.error('Supabase project insert error:', error);
+          showToast('Project saved locally. Cloud sync failed.', 'error');
+        }
+      });
+    }
     return newProj;
   }, [showToast]);
 

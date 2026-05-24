@@ -1,57 +1,60 @@
-// AI Classification and Claude API integration for DecisionTrail
+// AI Classification and Gemini API integration for DecisionTrail
 
 export const PHASES = ['Planning', 'Procurement', 'Installation', 'Commissioning', 'Closeout'];
 export const CATEGORIES = ['Engineering', 'Scheduling', 'Budget', 'Safety', 'Scope', 'Vendor', 'Resource'];
 export const IMPACT_LEVELS = ['Low', 'Medium', 'High', 'Critical'];
 
-// ---- Simulated AI Classifier ----
+// Patterns weighted toward distinctive vocabulary. Score = number of matches.
 const PHASE_PATTERNS = {
-  Planning: /\b(plan|design|blueprint|spec|requirement|draft|scope|initial|proposal|assess)\b/i,
-  Procurement: /\b(procur|order|vendor|supplier|material|purchas|contract|bid|quote|RFQ)\b/i,
-  Installation: /\b(install|site|field|mount|wir|connect|assembl|configur|position|place|bolt)\b/i,
-  Commissioning: /\b(commission|test|calibrat|startup|handover|verify|validate|tune|QA|acceptance)\b/i,
-  Closeout: /\b(close|punch|final|handoff|lesson|retrospect|document|archive|warranty)\b/i,
+  Planning: /\b(plan|design|blueprint|spec(ification)?|requirement|draft|scope|initial|proposal|assess|kickoff|kick.?off|charter)\b/gi,
+  Procurement: /\b(procur|order|vendor|supplier|material|purchas|contract|bid|quote|RFQ|PO\b|invoice|deliver)\b/gi,
+  Installation: /\b(install|site|field|mount|wir(e|ing)|connect|assembl|configur|position|bolt|weld|erect|on.?site)\b/gi,
+  Commissioning: /\b(commission|test|calibrat|startup|start.?up|handover|verify|validate|tune|QA|acceptance|FAT|SAT)\b/gi,
+  Closeout: /\b(close.?out|punch.?list|final|handoff|hand.?off|lesson|retrospect|archive|warranty|final.?walk)\b/gi,
 };
 
 const CATEGORY_PATTERNS = {
-  Scheduling: /\b(schedul|delay|timeline|deadline|date|duration|milestone|lead.?time)\b/i,
-  Budget: /\b(budget|cost|expense|price|fund|financ|invoice|overrun|savings)\b/i,
-  Safety: /\b(safe|hazard|osha|ppe|risk|incident|lockout|guard|complian)\b/i,
-  Scope: /\b(scope|change.?order|requirement|feature|add|remov|modify|amend)\b/i,
-  Vendor: /\b(vendor|supplier|contract|subcontract|OEM|manufacturer|distributor)\b/i,
-  Resource: /\b(resource|staff|crew|team|hire|headcount|overtime|capacity|labor)\b/i,
-  Engineering: /\b(engineer|technical|design|motor|sensor|conveyor|mesh|spec|torque|voltage)\b/i,
+  Scheduling: /\b(schedul|delay|timeline|deadline|due.?date|duration|milestone|lead.?time|gantt|critical.?path)\b/gi,
+  Budget: /\b(budget|cost|expense|price|fund|financ|invoice|overrun|saving|\$\d|dollar|ROI)\b/gi,
+  Safety: /\b(safe|hazard|OSHA|PPE|lockout|tagout|guard|complian|injury|incident|near.?miss)\b/gi,
+  Scope: /\b(scope|change.?order|requirement|feature|add(ed|ing)?|remov|modify|amend|deviation)\b/gi,
+  Vendor: /\b(vendor|supplier|subcontract|OEM|manufacturer|distributor|third.?party)\b/gi,
+  Resource: /\b(resource|staff|crew|team|hire|headcount|overtime|capacity|labor|second.?shift|backfill)\b/gi,
+  Engineering: /\b(engineer|technical|motor|sensor|conveyor|mesh|torque|voltage|amperage|gauge|bearing|drive|PLC|HMI|drawing)\b/gi,
 };
 
 const IMPACT_PATTERNS = {
-  Critical: /\b(critical|emergency|urgent|blocker|stop.?work|safety.?hazard|showstopper)\b/i,
-  High: /\b(major|significant|large|substantial|expensive|delay.?project)\b/i,
-  Low: /\b(minor|small|low|trivial|cosmetic|nice.?to.?have)\b/i,
+  Critical: /\b(critical|emergency|urgent|blocker|stop.?work|safety.?hazard|showstopper|catastroph|fail)\b/gi,
+  High: /\b(major|significant|substantial|expensive|delay.?project|client.?escalat|large)\b/gi,
+  Low: /\b(minor|small|trivial|cosmetic|nice.?to.?have|negligible)\b/gi,
 };
+
+function scoreMatches(text, patterns, fallback) {
+  let best = fallback;
+  let bestScore = 0;
+  for (const [label, rx] of Object.entries(patterns)) {
+    const matches = text.match(rx);
+    const score = matches ? matches.length : 0;
+    if (score > bestScore) {
+      bestScore = score;
+      best = label;
+    }
+  }
+  return best;
+}
 
 export function classifyDecision(text) {
   const combined = typeof text === 'string' ? text : Object.values(text).join(' ');
   const lower = combined.toLowerCase();
 
-  let phase = 'Installation';
-  for (const [p, rx] of Object.entries(PHASE_PATTERNS)) {
-    if (rx.test(lower)) { phase = p; break; }
-  }
-
-  let category = 'Engineering';
-  for (const [c, rx] of Object.entries(CATEGORY_PATTERNS)) {
-    if (rx.test(lower)) { category = c; break; }
-  }
-
-  let impact = 'Medium';
-  for (const [i, rx] of Object.entries(IMPACT_PATTERNS)) {
-    if (rx.test(lower)) { impact = i; break; }
-  }
+  const phase = scoreMatches(lower, PHASE_PATTERNS, 'Installation');
+  const category = scoreMatches(lower, CATEGORY_PATTERNS, 'Engineering');
+  const impact = scoreMatches(lower, IMPACT_PATTERNS, 'Medium');
 
   return { phase, category, impact };
 }
 
-// ---- Generate AI summary from answers ----
+// Generate summary from answers
 export function generateSummary(answers) {
   const what = answers.what || '';
   const why = answers.why || '';
@@ -74,7 +77,7 @@ Given a user's conversational description of a project decision, extract and ret
 
 Use plain workplace language. No PM jargon.`;
 
-// ---- Gemini API Integration ----
+// Gemini API Integration
 const GEMINI_KEY = typeof import.meta !== 'undefined'
   ? import.meta.env?.VITE_GEMINI_API_KEY || ''
   : '';
