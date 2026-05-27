@@ -8,13 +8,15 @@
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Supabase](https://img.shields.io/badge/Supabase-Backend-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
-[![Claude AI](https://img.shields.io/badge/Claude-AI%20Powered-D4A574?logo=anthropic&logoColor=white)](https://anthropic.com)
+[![Gemini AI](https://img.shields.io/badge/Gemini-AI%20Powered-4285F4?logo=google&logoColor=white)](https://ai.google.dev)
 
 *Built for EMGT 5220: Engineering Project Management | Northeastern University | Team 3*
 
-[Getting Started](#getting-started) | [Features](#features) | [Architecture](#architecture) | [Team](#team)
+[Live Demo](https://decision-trail.vercel.app) · [Getting Started](#getting-started) · [For Nathaniel and Kaylee](#for-nathaniel-and-kaylee) · [Features](#features) · [Architecture](#architecture) · [Team](#team)
 
 </div>
+
+> **Current sprint:** M3 (Work Breakdown Structure). M2 submitted May 2026. Build is functional and deployed for testing. Next up: M4 (Implementation Plan, green-light gate).
 
 ---
 
@@ -22,7 +24,7 @@
 
 In industrial equipment installation environments, dozens of engineering and configuration decisions are made weekly across multiple active project sites. These decisions range from equipment specifications and layout changes to material substitutions and scheduling adjustments.
 
-**The painful reality:** these decisions exist only in scattered emails, chat messages, and verbal exchanges between field technicians, project coordinators, and clients. When a decision is questioned weeks or months later, there is no single, searchable record of what was decided, who authorized it, what alternatives were evaluated, or why the chosen path was selected.
+**The painful reality:** these decisions exist only in scattered emails, chat messages, and verbal exchanges between field technicians, project coordinators, and clients. When a decision is questioned weeks or months later, there is no single, searchable record of what was decided, who authorized it, what alternatives were evaluated, or why the chosen path was selected. Retrieval today takes one to three hours of email and document searching.
 
 ### The Failure Scenario
 
@@ -38,19 +40,19 @@ We researched the current landscape extensively. Nothing solves this specific pr
 
 ### 1. Enterprise PM Suites (monday.com, Confluence, Procore, ClickUp)
 
-These platforms offer decision logging as a secondary feature buried inside massive systems. monday.com treats decision logs as structured records within its broader work management platform, requiring users to navigate boards, custom fields, and automation workflows. Procore's AI assistant ("Procore Assist") is conversational, but it focuses on retrieving information from specs, RFIs, and submittals, not on capturing the rationale behind field decisions. **A Field Project Coordinator without PM training will not navigate these systems to log a quick decision.**
+These platforms offer decision logging as a secondary feature buried inside massive systems. A Field Project Coordinator without PM training will not navigate boards, custom fields, and automation workflows to log a quick decision during a site walkthrough.
 
 ### 2. Decision Management Software (UiPath, InRule, Decisions, Sapiens)
 
-These are enterprise automation platforms focused on encoding business rules and executing decision logic at scale, primarily for regulated industries like insurance and financial services. **They automate decisions; they do not document human decisions made in the field.**
+Enterprise automation platforms focused on encoding business rules and executing decision logic at scale. They automate decisions; they do not document human decisions made in the field.
 
 ### 3. Field Operations AI Tools (OpenSpace, Fieldwire, BuildOps, SiteCapture)
 
-These focus on visual documentation, scheduling, and technician dispatching. They let field crews capture notes, photos, and checklists, but the AI assists with summarizing visit reports and auto-populating asset records. **None of them structure the reasoning behind engineering or configuration decisions.**
+These focus on visual documentation, scheduling, and technician dispatching. None of them structure the reasoning behind engineering or configuration decisions.
 
 ### What DecisionTrail Does Differently
 
-A lightweight, standalone tool where a non-PM-trained field coordinator can describe a decision conversationally, and the AI structures it into a complete record (what was decided, why, who was involved, what was rejected, which project phase it belongs to) with zero knowledge of decision frameworks. Under two minutes. Retrievable in under 30 seconds.
+A lightweight, standalone tool where a non-PM-trained field coordinator can describe a decision conversationally, and the AI structures it into a complete record (what was decided, why, who was involved, what was rejected, which project phase it belongs to) with zero knowledge of decision frameworks. Under two minutes to log. Under sixty seconds to retrieve.
 
 ---
 
@@ -58,23 +60,24 @@ A lightweight, standalone tool where a non-PM-trained field coordinator can desc
 
 ### Core Capabilities
 
-| Feature | Description | Success Criterion Met |
+| Feature | Description | M2 Requirement |
 |---|---|---|
-| **AI-Guided Capture** | 5-step conversational wizard walks coordinators through what, why, who, alternatives, and risks | Structured rationale capture |
-| **Quick Capture Mode** | Two required fields (what + why), live timer benchmarked against 2-minute target | Log a decision in under 2 minutes |
-| **Smart Search & Filters** | Filter by phase, category, impact, person, date; full-text keyword search | Retrieve rationale in under 30 seconds |
-| **Phase Coverage Map** | Dashboard visualization showing which project phases have documented decisions and which have gaps | 80% decision capture visibility |
-| **Completeness Tracking** | Per-decision ring indicator + aggregate dashboard metric | Identify incomplete records |
-| **Multi-Project Support** | Create and switch between projects; decisions organized per project | Real-world multi-site use |
-| **Export** | Copy to clipboard or download as plain text / CSV | Present rationale when questioned |
-| **Edit After Capture** | Quick captures can be enriched later with alternatives, people, risks | Progressive documentation |
+| **AI-Guided Capture** | 5-step conversational wizard walks coordinators through what, why, who, alternatives, and risks | FR-01, FR-03 |
+| **Quick Capture Mode** | Two required fields (what + why), live timer benchmarked against 2-minute target | FR-01, FR-02 |
+| **Smart Search & Filters** | Filter by phase, category, impact, person, date; full-text keyword search | FR-05 |
+| **Phase Coverage Map** | Dashboard visualization showing which project phases have documented decisions and which have gaps | FR-06 |
+| **Completeness Tracking** | Per-decision ring indicator + aggregate dashboard metric | FR-10 |
+| **Multi-Project Support** | Create and switch between projects; decisions organized per project | FR-07 |
+| **Export** | Copy to clipboard or download as plain text / CSV | FR-08 |
+| **Edit After Capture** | Quick captures can be enriched later with alternatives, people, risks | FR-09 |
+| **Auto-Categorization** | AI assigns project phase, decision category, and impact level from conversational input | FR-04 |
 
 ### AI Engine (Dual Mode)
 
 DecisionTrail supports two AI modes, toggled from the sidebar:
 
 - **Simulated Mode** (default): Regex-based classifier that auto-detects project phase, decision category, and impact level. Zero API cost, works offline, ideal for demos and testing.
-- **Claude AI Mode**: Calls the Anthropic Claude API to parse conversational input and generate structured decision records with richer context extraction. Requires an API key.
+- **Gemini AI Mode**: Calls the Google Gemini 2.0 Flash API to parse conversational input and generate structured decision records with richer context extraction. Requires an API key.
 
 ### Decision Classification
 
@@ -84,18 +87,31 @@ Every decision is automatically tagged with:
 - **Category**: Engineering, Scheduling, Budget, Safety, Scope, Vendor, Resource
 - **Impact**: Low, Medium, High, Critical
 
-### Sample Data and Real Data Sources
+### Sample Data
 
-DecisionTrail ships with **24+ real and domain-specific decisions** seeded from multiple sources:
+DecisionTrail ships with **74 real and domain-specific decisions** seeded across 5 projects:
 
 | Source | Records | What It Provides |
 |---|---|---|
-| **Industrial Equipment Decisions** (handcrafted, Van Dyk-grounded) | 12 | Full decision records with rationale from real MRF installation scenarios: equipment substitutions, conveyor reroutes, vendor switches, safety compliance, scope changes, resource allocation |
-| **NASA TechPort API** (`techport.nasa.gov/api`) | 12+ | Real NASA R&D project decisions with descriptions, benefits analysis, organizational data, and technology readiness assessments |
+| **Industrial Equipment Decisions** (handcrafted) | 12 | Full decision records with rationale from real installation scenarios: equipment substitutions, conveyor reroutes, vendor switches, safety compliance, scope changes |
+| **NASA TechPort API** (`techport.nasa.gov/api`) | 12 | Real NASA R&D project decisions with descriptions, benefits analysis, and technology readiness assessments |
+| **NTSB CAROL Records** | 50 | Real probable cause investigation data from the National Transportation Safety Board |
 
-The seed script (`scripts/seed.mjs`) fetches live data from NASA's public REST API and combines it with domain-specific industrial equipment decisions. Run `node scripts/seed.mjs` to populate your Supabase instance.
+Run `node scripts/seed.mjs` to populate your Supabase instance.
 
-**Data architecture:** Supabase (PostgreSQL) with full-text search indexes, row-level security, and a localStorage fallback for offline/demo use.
+**Data architecture:** Supabase (PostgreSQL) with full-text search indexes, row-level security, and a localStorage fallback for offline or demo use.
+
+---
+
+## Success Criteria (from M2 Section 1.4)
+
+| ID | Criterion | Target |
+|---|---|---|
+| SC-01 | A field coordinator unfamiliar with the tool can log a complete decision in under 2 minutes after reading the user guide | < 2 minutes |
+| SC-02 | Retrieval of a past decision's full rationale via search takes under 60 seconds | < 60 seconds (baseline: 1 to 3 hours via email) |
+| SC-03 | At least 80% of decisions logged through the AI-guided wizard are auto-categorized with correct phase and category | >= 80% accuracy |
+| SC-04 | The phase coverage map correctly identifies phases with zero documented decisions | 100% detection |
+| SC-05 | Post-use satisfaction survey: coordinator reports increased confidence when questioned about past decisions | Positive trend |
 
 ---
 
@@ -119,7 +135,7 @@ npm install
 npm run dev
 ```
 
-The app opens at `http://localhost:3000`. Works immediately with localStorage and sample data, no backend setup required.
+The app opens at `http://localhost:3000`. Works immediately with localStorage and sample data; no backend or API key required.
 
 ### Environment Variables (Optional)
 
@@ -129,24 +145,46 @@ cp .env.example .env
 
 | Variable | Purpose | Required? |
 |---|---|---|
-| `VITE_SUPABASE_URL` | Supabase project URL | Optional |
+| `VITE_SUPABASE_URL` | Supabase project URL | Optional (falls back to localStorage) |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key | Optional |
-| `VITE_ANTHROPIC_API_KEY` | Anthropic API key for Claude AI mode | Optional |
+| `VITE_GEMINI_API_KEY` | Google Gemini API key for live AI mode | Optional (falls back to simulated classifier) |
 
 ### Supabase Setup (Optional)
 
 1. Create a free project at [supabase.com](https://supabase.com)
 2. Open the SQL Editor and run `supabase/schema.sql`
-3. Copy your project URL and anon key into `.env`
+3. Run `node scripts/seed.mjs` to populate with sample data
+4. Copy your project URL and anon key into `.env`
 
 Without Supabase, the app uses localStorage with full functionality.
 
-### Deployment (Vercel)
+### Live Demo
 
-```bash
-npm run build
-# Deploy the `dist/` folder to Vercel, Netlify, or any static host
-```
+Latest build is deployed at [decision-trail.vercel.app](https://decision-trail.vercel.app). You can use the live demo to explore the tool without running anything locally.
+
+---
+
+## For Nathaniel and Kaylee
+
+Welcome to the build. Here is how to get oriented quickly.
+
+### Start here
+
+1. **Open the live demo** at [decision-trail.vercel.app](https://decision-trail.vercel.app) and click around for ten minutes. Try Quick Capture and the Wizard Mode. Log at least three decisions using examples from your own experience.
+2. **Read the M2 deliverable Section 1.1** (Tool Description) to see the design intent on paper, then come back to the live app to see what is actually built.
+3. **Skim Section 1.3 (Functional Requirements)** in the M2 deliverable. The "M2 Requirement" column in the Features table above tells you which feature satisfies which requirement.
+
+### What you can do right now
+
+- **File issues.** Use [GitHub Issues](https://github.com/dreamerskymaster/DecisionTrail/issues) for anything you spot: bugs, confusing labels, missing features, UX rough edges. Title format: `[bug]`, `[ux]`, or `[idea]` followed by a short description.
+- **Use the build to ground M3 and M4 planning.** As Nathaniel writes the M3 WBS and the team writes the M4 Implementation Plan, this repo is the ground truth for what exists. Reference the file structure under [Architecture](#architecture) when sizing work packages.
+- **Kaylee: start drafting the M6 user guide.** The Wizard flow and Quick Capture screens are stable enough that the one-to-two-page user guide can begin now. Keep the language coordinator-friendly (no PM terminology).
+- **Nathaniel: review the decision taxonomy.** The phase and category lists in `src/lib/data.js` are pulled from M2 Section 1.1.4. Flag anything that does not match the field reality you have heard described.
+- **All: test against the success criteria.** When the build is feature-complete (M6), all three of us run SC-01 through SC-05 from M2 Section 1.4. Familiarize yourself now so M6 testing is not a cold start.
+
+### If something breaks
+
+Message Ajith on Teams with the error message. Do not try to fix it in the code unless you are comfortable doing so. We will work through issues together.
 
 ---
 
@@ -160,9 +198,9 @@ npm run build
 | Styling | Tailwind CSS 3.4, custom design system |
 | Animation | Framer Motion 11 |
 | Persistence | Supabase (primary), localStorage (fallback) |
-| AI | Anthropic Claude API + simulated classifier |
+| AI | Google Gemini 2.0 Flash (live) + simulated classifier (offline) |
 | Icons | Lucide React |
-| Export | Native Blob/Clipboard API |
+| Export | Native Blob and Clipboard APIs |
 
 ### Project Structure
 
@@ -177,15 +215,16 @@ src/
     DecisionDetail.jsx   # Full decision view with inline editing
     ExportModal.jsx      # Export to text/CSV (clipboard or file download)
   lib/
-    ai.js                # Simulated classifier + Claude API integration
+    ai.js                # Simulated classifier + Gemini API integration
     supabase.js          # Supabase client + localStorage fallback layer
     data.js              # Sample decisions, project defaults, prompt definitions
   hooks/
     useStore.js          # Central state management with persistence
-  App.jsx                # Layout shell, routing, toast notifications
-  index.css              # Tailwind layers + custom component classes
+  App.jsx                # Root layout, routing, sidebar integration
 supabase/
-  schema.sql             # Complete database schema with indexes and RLS policies
+  schema.sql             # Database schema with RLS policies and full-text search indexes
+scripts/
+  seed.mjs               # Populates Supabase with sample decisions (NTSB, NASA, industrial)
 ```
 
 ### Design Decisions
@@ -198,28 +237,33 @@ supabase/
 
 ---
 
-## Mapping to Success Criteria
+## Sprint Timeline
 
-From the M1 Project Charter (Section 1.6):
+| Module | Sprint Goal | Status |
+|---|---|---|
+| M1 | Team formation and topic selection | Complete (submitted May 15) |
+| M2 | Tool definition and requirements | Complete (submitted May 28) |
+| M3 | Work Breakdown Structure | **Current** |
+| M4 | Implementation Plan (green-light gate) | Upcoming |
+| M5 | Build Sprint 1 (Beta) | Upcoming |
+| M6 | Build Sprint 2 (Final Tool) | Upcoming |
+| M7 | Evaluation and Live Demo | Upcoming |
 
-| Criterion | How DecisionTrail Addresses It |
-|---|---|
-| Log a decision in under 2 minutes | Quick Capture mode with live timer; only "what" and "why" required |
-| Retrieve rationale in under 30 seconds | Full-text search + phase/category/impact/person filters |
-| 80% of decisions captured with complete rationale | Completeness tracking ring on every decision + dashboard aggregate |
-| Reduce scope disputes by 50% | Phase coverage map highlights documentation gaps before they become disputes |
-| Colleague feels more confident when questioned | One-click copy of structured rationale; searchable history |
-| No PM training or onboarding required | Plain language prompts; conversational AI; no decision matrix jargon |
+### Deliverables (OneDrive)
+
+- M1 Team Charter and Topic Selection: *[add OneDrive link]*
+- M2 Tool Definition and Requirements: *[add OneDrive link]*
+- Meeting notes and feedback logs: *[add OneDrive link]*
 
 ---
 
 ## Team
 
-| Member | Role | Contributions |
+| Member | Role | Areas of Ownership |
 |---|---|---|
-| **Ajith Srikanth** | SME, AI Integration Lead | Architecture, full-stack development, AI classifier design, domain expertise |
-| **Kaylee Tanoto** | POC, Feedback Coordinator, Lead Editor | Prompt flow design, user guide, deliverable editing, usability testing |
-| **Nathaniel Cramer** | Meeting Scheduler, Tasking Coordinator, Presentation Lead | Decision taxonomy, sample data, test scenarios, demo presentation |
+| **Ajith Srikanth** | SME, AI Integration Lead | Domain expertise, tool architecture, AI integration, core development |
+| **Nathaniel Cramer** | Meeting Scheduler, Tasking Coordinator, Presentation Lead | Sprint planning, task tracking, schedule/network diagrams, M7 presentation |
+| **Kaylee Tanoto** | POC, Feedback Coordinator, Lead Editor | Instructor liaison, deliverable editing, user guide, acceptance testing documentation |
 
 ---
 
@@ -229,10 +273,14 @@ From the M1 Project Charter (Section 1.6):
 Northeastern University, Graduate School of Engineering
 Summer 1 2026 | Dr. Tristan Johnson
 
-This tool was designed for a Field Project Coordinator at a mid-size industrial equipment solutions provider who manages installation timelines, vendor schedules, and site logistics for large-scale recycling and material processing systems.
+This tool was designed for a Field Project Coordinator at a mid-size industrial equipment solutions provider who manages installation timelines, vendor schedules, and site logistics for complex multi-phase installation projects.
 
 ---
 
 ## License
 
 Academic project for Northeastern University EMGT 5220. Not for commercial distribution.
+
+---
+
+*This README is maintained by Ajith. If something is out of date or unclear, message on Teams.*
